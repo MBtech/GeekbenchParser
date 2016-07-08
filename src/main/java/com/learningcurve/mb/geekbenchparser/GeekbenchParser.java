@@ -77,7 +77,8 @@ public class GeekbenchParser {
             Iterator<Element> title = perfTitle.iterator();
             HashMap<String, String> temp = new HashMap<>();
             while (title.hasNext() && score.hasNext()) {
-                String num = score.next().text().split(" ")[1].concat(" " + score.next().text().split(" ")[2]);
+                String next = score.next().text();
+                String num = next.split(" ")[1].concat(" " + next.split(" ")[2]);
                 String name = title.next().text();
                 temp.put(name, num);
                 //System.out.println(name + " : " + num);
