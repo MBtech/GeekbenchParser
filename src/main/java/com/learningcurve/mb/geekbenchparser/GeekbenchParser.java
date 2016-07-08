@@ -10,10 +10,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -33,8 +31,13 @@ import org.jsoup.select.Elements;
 public class GeekbenchParser {
 
     public static void main(String[] args) throws IOException, InterruptedException {
+
         System.out.println(args[0]);
         String url = args[0];
+        File urlFile = new File("urls");
+        FileWriter fw = new FileWriter(urlFile,true);
+        fw.write(url);
+        fw.close();
         Document doc = Jsoup.connect(url).get();
         HashMap<String, HashMap<String, String>> results = parseBenchmarkInfo(doc);
 
@@ -62,11 +65,6 @@ public class GeekbenchParser {
     public static HashMap<String, HashMap<String, String>> parseBenchmarkInfo(Document doc) {
         HashMap<String, HashMap<String, String>> result = new HashMap<>();
         String[] perfBenchmark = {"Integer Performance", "Floating Point Performance", "Memory Performance"};
-//        Elements elements = doc.select("div.span9").select("table");
-//        for (Element e : elements) {
-//            System.out.println(e.select("tbody").text());
-//            //System.out.println(e.text());
-//        }
 
         Elements benchmarks = doc.select("div.span9").select("table.table.section-performance");
 
