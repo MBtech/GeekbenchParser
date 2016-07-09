@@ -36,7 +36,7 @@ public class GeekbenchParser {
         String url = args[0];
         File urlFile = new File("urls");
         FileWriter fw = new FileWriter(urlFile,true);
-        fw.write(url);
+        fw.write(url+"\n");
         fw.close();
         Document doc = Jsoup.connect(url).get();
         HashMap<String, HashMap<String, String>> results = parseBenchmarkInfo(doc);
@@ -46,7 +46,7 @@ public class GeekbenchParser {
             boolean headerFlag = !file.exists();
             CSVWriter writer = new CSVWriter(new FileWriter(cat + "_results.csv",true));
             Set<String> keys = results.get(cat).keySet();
-            System.out.println(keys);
+            //System.out.println(keys);
             String[] header = keys.toArray(new String[keys.size()]);
             if (headerFlag) {
                 writer.writeNext(header);
