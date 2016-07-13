@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -39,14 +40,13 @@ public class GeekbenchParser {
         fw.write(url+"\n");
         fw.close();
         Document doc = Jsoup.connect(url).get();
-        HashMap<String, HashMap<String, String>> results = parseBenchmarkInfo(doc);
+        HashMap<String, LinkedHashMap<String, String>> results = parseBenchmarkInfo(doc);
 
         for (String cat : results.keySet()) {
             File file = new File(cat + "_results.csv");
             boolean headerFlag = !file.exists();
             CSVWriter writer = new CSVWriter(new FileWriter(cat + "_results.csv",true));
             Set<String> keys = results.get(cat).keySet();
-            //System.out.println(keys);
             String[] header = keys.toArray(new String[keys.size()]);
             if (headerFlag) {
                 writer.writeNext(header);
@@ -62,8 +62,8 @@ public class GeekbenchParser {
 
     }
 
-    public static HashMap<String, HashMap<String, String>> parseBenchmarkInfo(Document doc) {
-        HashMap<String, HashMap<String, String>> result = new HashMap<>();
+    public static HashMap<String, LinkedHashMap<String, String>> parseBenchmarkInfo(Document doc) {
+        HashMap<String, LinkedHashMap<String, String>> result = new HashMap<>();
         String[] perfBenchmark = {"Integer Performance", "Floating Point Performance", "Memory Performance"};
 
         Elements benchmarks = doc.select("div.span9").select("table.table.section-performance");
@@ -75,13 +75,12 @@ public class GeekbenchParser {
                     .select("tr").select("td.name");
             Iterator<Element> score = perf.iterator();
             Iterator<Element> title = perfTitle.iterator();
-            HashMap<String, String> temp = new HashMap<>();
+            LinkedHashMap<String, String> temp = new LinkedHashMap<>();
             while (title.hasNext() && score.hasNext()) {
                 String next = score.next().text();
                 String num = next.split(" ")[1].concat(" " + next.split(" ")[2]);
                 String name = title.next().text();
                 temp.put(name, num);
-                //System.out.println(name + " : " + num);
             }
             result.put(perfBenchmark[i], temp);
         }
