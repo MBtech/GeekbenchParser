@@ -6,9 +6,12 @@
 package com.learningcurve.mb.geekbenchparser;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -32,20 +35,46 @@ import org.jsoup.select.Elements;
 public class GeekbenchParser {
 
     public static void main(String[] args) throws IOException, InterruptedException {
+        if (args[0].equalsIgnoreCase("reprocess")) {
+            String mainDir = args[1];
+            File f = new File(mainDir);
+            File[] list = f.listFiles();
+            for (File file : list) {
+                if (file.isDirectory()) {
+                    File[] tempList = file.listFiles();
+                    for (File file1 : tempList) {
+                        if (file1.getName().equals("urls")) {
+                            BufferedReader br = new BufferedReader(new FileReader(file1));
+                            String url = "";
+                            while ((url = br.readLine()) != null) {
+                                Document doc = Jsoup.connect(url).get();
+                                HashMap<String, LinkedHashMap<String, String>> results = parseBenchmarkInfo(doc);
+                                writeToFile(results, file.getAbsolutePath());
+                            }
+                        }
+                    }
+                }
+            }
 
-        System.out.println(args[0]);
-        String url = args[0];
-        File urlFile = new File("urls");
-        FileWriter fw = new FileWriter(urlFile,true);
-        fw.write(url+"\n");
-        fw.close();
-        Document doc = Jsoup.connect(url).get();
-        HashMap<String, LinkedHashMap<String, String>> results = parseBenchmarkInfo(doc);
+        } else if (args[0].equalsIgnoreCase("process")) {
+            System.out.println(args[1]);
+            String url = args[1];
+            File urlFile = new File("urls");
+            FileWriter fw = new FileWriter(urlFile, true);
+            fw.write(url + "\n");
+            fw.close();
+            Document doc = Jsoup.connect(url).get();
+            HashMap<String, LinkedHashMap<String, String>> results = parseBenchmarkInfo(doc);
+            writeToFile(results, "");
+        }
 
+    }
+
+    public static void writeToFile(HashMap<String, LinkedHashMap<String, String>> results, String dir) throws IOException {
         for (String cat : results.keySet()) {
-            File file = new File(cat + "_results.csv");
+            File file = new File(dir + "/" + cat + "_results.csv");
             boolean headerFlag = !file.exists();
-            CSVWriter writer = new CSVWriter(new FileWriter(cat + "_results.csv",true));
+            CSVWriter writer = new CSVWriter(new FileWriter(dir + "/" +cat + "_results.csv", true));
             Set<String> keys = results.get(cat).keySet();
             String[] header = keys.toArray(new String[keys.size()]);
             if (headerFlag) {
@@ -59,7 +88,6 @@ public class GeekbenchParser {
             writer.writeNext(values);
             writer.close();
         }
-
     }
 
     public static HashMap<String, LinkedHashMap<String, String>> parseBenchmarkInfo(Document doc) {
